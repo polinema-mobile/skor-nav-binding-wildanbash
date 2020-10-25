@@ -5,8 +5,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentResultListener;
 import androidx.navigation.Navigation;
 
 import java.util.ArrayList;
@@ -42,11 +44,40 @@ public class ScoreFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState) {
-		FragmentScoreBinding binding = DataBindingUtil.inflate(inflater, R.layout.fragment_score, container, false);
+		final FragmentScoreBinding binding = DataBindingUtil.inflate(inflater, R.layout.fragment_score, container, false);
 
+		binding.setFragment(this);
 		binding.setHomeGoalScorerList(homeGoalScorerList);
 		binding.setAwayGoalScorerList(awayGoalScorerList);
-		binding.setFragment(this);
+
+		getParentFragmentManager().setFragmentResultListener(HOME_REQUEST_KEY, this, new FragmentResultListener() {
+			@Override
+			public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+				GoalScorer goalScorer = result.getParcelable(SCORER_KEY);
+				homeGoalScorerList.add(goalScorer);
+
+				StringBuilder data = new StringBuilder();
+				for (int i = 0; i < homeGoalScorerList.size(); i++){
+					data.append(homeGoalScorerList.get(i).toString());
+				}
+				binding.textHomeScorer.setText(data);
+			}
+		});
+
+		getParentFragmentManager().setFragmentResultListener(AWAY_REQUEST_KEY, this, new FragmentResultListener() {
+			@Override
+			public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+				GoalScorer goalScorer = result.getParcelable(SCORER_KEY);
+				awayGoalScorerList.add(goalScorer);
+
+				StringBuilder data = new StringBuilder();
+				for (int i = 0; i < awayGoalScorerList.size(); i++){
+					data.append(awayGoalScorerList.get(i).toString());
+				}
+				binding.textAwayScorer.setText(data);
+			}
+		});
+
 		return binding.getRoot();
 	}
 
